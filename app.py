@@ -9,6 +9,8 @@ from datetime import datetime
 # from config import APIKEY
 import os
 
+# heroku config:set API_KEY=xxxxxxx
+APIKEY = os.environ['API_KEY']
 
 st.title("Alpha Vantage Stock Time Series")
 
@@ -23,7 +25,6 @@ year = st.sidebar.selectbox(label='Year:', options=history_year,
 month = st.sidebar.selectbox(label='Month:', options=calendar.month_name[1:13],
                              key='month')
 
-APIKEY = os.environ['API_KEY']
 
 # get stock price from Alpha Vantage API
 def get_data(ticker, month, year):
