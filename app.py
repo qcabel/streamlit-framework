@@ -22,8 +22,6 @@ year = st.sidebar.selectbox(label='Year:', options=history_year,
 month = st.sidebar.selectbox(label='Month:', options=calendar.month_name[1:13],
                              key='month')
 
-'Adjusted closing price for ', ticker, ' on ', month, ',', str(year), ':'
-
 
 # get stock price from Alpha Vantage API
 def get_data(ticker, month, year):
@@ -31,27 +29,44 @@ def get_data(ticker, month, year):
            '&outputsize=full&symbol={}&apikey={}&datatype=csv').format(ticker, APIKEY)
     response = requests.get(url)
 
-    # parse string output
-    df = pd.read_csv(io.StringIO(response.text))
-    df['timestamp'] = pd.to_datetime(df['timestamp'])
-    df = df.set_index('timestamp')
-    df.sort_index(ascending=True, inplace=True)
+    if response.headers['content-type'] == 'application/json':
+        sub_df = None
+    else:
+        # parse string output
+        df = pd.read_csv(io.StringIO(response.text))
+        df['timestamp'] = pd.to_datetime(df['timestamp'])
+        df = df.set_index('timestamp')
+        df.sort_index(ascending=True, inplace=True)
 
-    # slice based on month, year
-    sub_df = df[str(year)+'-'+str(datetime.strptime(month, '%B').month)]
+        # slice based on month, year
+        try:
+            sub_df = df.loc[str(year)+'-'+str(datetime.strptime(month, '%B').month)]
+        except:
+            "Not available time period."
+            sub_df = None
+
     return sub_df
 
 
 df = get_data(ticker, month, year)
-df_close = df['close']
-st.line_chart(df_close)
 
-"Show the raw data:"
-df
+if df is None:
+    "Please input a valid ticker for the selected time period."
+
+else:
+    df_close = df[['close', 'adjusted_close']]
+
+    'Adjusted closing price for ', ticker.upper(), ': ', month, ',', str(year)
+
+    st.line_chart(df_close)
+
+    "Show the raw data:"
+    df
+
 # if st.checkbox('Show the raw data'):
 #     df
 
-# df.head()
+
 
 
 
