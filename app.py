@@ -6,12 +6,13 @@ import requests
 import calendar
 from datetime import datetime
 
-from config import APIKEY
+# from config import APIKEY
+import os
 
 
 st.title("Alpha Vantage Stock Time Series")
 
-history_year = [*range(2010, 2021)]
+history_year = [*range(2010, 2022)]
 
 # sidebar layout for options
 st.sidebar.write('**Adjusted closing price for:**')
@@ -22,6 +23,7 @@ year = st.sidebar.selectbox(label='Year:', options=history_year,
 month = st.sidebar.selectbox(label='Month:', options=calendar.month_name[1:13],
                              key='month')
 
+APIKEY = os.environ['API_KEY']
 
 # get stock price from Alpha Vantage API
 def get_data(ticker, month, year):
@@ -30,7 +32,7 @@ def get_data(ticker, month, year):
     response = requests.get(url)
 
     if response.headers['content-type'] == 'application/json':
-        sub_df = None
+        sub_df = None  # not successful
     else:
         # parse string output
         df = pd.read_csv(io.StringIO(response.text))
