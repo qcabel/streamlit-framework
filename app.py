@@ -4,6 +4,7 @@ import pandas as pd
 
 import requests
 import calendar
+from datetime import datetime
 
 from config import APIKEY
 
@@ -29,15 +30,26 @@ def get_data(ticker, month, year):
     url = ('https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED'
            '&outputsize=full&symbol={}&apikey={}&datatype=csv').format(ticker, APIKEY)
     response = requests.get(url)
+
+    # parse string output
     df = pd.read_csv(io.StringIO(response.text))
-    # df = pd.read_csv(response)
-    return df
+    df['timestamp'] = pd.to_datetime(df['timestamp'])
+    df = df.set_index('timestamp')
+    df.sort_index(ascending=True, inplace=True)
+
+    # slice based on month, year
+    sub_df = df[str(year)+'-'+str(datetime.strptime(month, '%B').month)]
+    return sub_df
 
 
 df = get_data(ticker, month, year)
+df_close = df['close']
+st.line_chart(df_close)
 
-if st.checkbox('Show raw data'):
-    df
+"Show the raw data:"
+df
+# if st.checkbox('Show the raw data'):
+#     df
 
 # df.head()
 
